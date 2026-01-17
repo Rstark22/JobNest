@@ -1,18 +1,22 @@
-// routes/campus.js
 import express from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import Campus from "../models/Campus.js";
-import { authCampus } from "../middlewares/authCampus.js";
+import authCampus from "../middlewares/authCampus.js";
+import {
+  getPendingInternships,
+  verifyInternship,
+  rejectInternship,
+} from "../controller/CampusController.js";
 
 dotenv.config();
 
-const router = express.Router();
+const CampusRouter = express.Router();
 
 // =====================
 // Signup
 // =====================
-router.post("/signup", async (req, res) => {
+CampusRouter.post("/signup", async (req, res) => {
   const { name, email, password, campusName } = req.body;
   try {
     const exist = await Campus.findOne({ email });
@@ -35,7 +39,7 @@ router.post("/signup", async (req, res) => {
 // =====================
 // Login
 // =====================
-router.post("/login", async (req, res) => {
+CampusRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     const campus = await Campus.findOne({ email });
@@ -59,7 +63,7 @@ router.post("/login", async (req, res) => {
 // =====================
 // Protected profile route
 // =====================
-router.get("/profile", authCampus, async (req, res) => {
+CampusRouter.get("/profile", authCampus, async (req, res) => {
   try {
     res.json(req.user);
   } catch (err) {
@@ -67,4 +71,11 @@ router.get("/profile", authCampus, async (req, res) => {
   }
 });
 
-export default router;
+// =====================
+// Campus Dashboard routes
+// =====================
+CampusRouter.get("/pending", authCampus, getPendingInternships); // view pending internships
+CampusRouter.put("/internship/:id/verify", authCampus, verifyInternship); // verify internship
+CampusRouter.put("/internship/:id/reject", authCampus, rejectInternship); // reject internship
+
+export default CampusRouter;

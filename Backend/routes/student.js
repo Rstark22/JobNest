@@ -2,13 +2,14 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import Student from "../models/Student.js";
-import { authStudent } from "../middlewares/authStudent.js";
+import authStudent from "../middlewares/authStudent.js"
 
 dotenv.config();
 const router = express.Router();
 
 // Signup
-router.post("/signup", async (req, res) => {
+router.post("/register", async (req, res) => {
+  console.log("Student register route hit");
   const { name, email, department, resumeLink, password } = req.body;
   try {
     const exist = await Student.findOne({ email });

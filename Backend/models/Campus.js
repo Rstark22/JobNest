@@ -1,24 +1,47 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const CampusSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  campusName: { type: String }, // Optional field
-}, { timestamps: true });
+const campusSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-// Hash password before saving
-CampusSchema.pre("save", async function(next) {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+
+    campusName: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
+
+// 🔐 Hash password before saving
+campusSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Compare password for login
-CampusSchema.methods.matchPassword = async function(password) {
-  return await bcrypt.compare(password, this.password);
+// 🔑 Compare password during login
+campusSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export default mongoose.model("Campus", CampusSchema);
+export default mongoose.model("Campus", campusSchema);

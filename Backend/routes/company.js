@@ -1,70 +1,34 @@
-// routes/company.js
 import express from "express";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import Company from "../models/Company.js";
-import { authCompany } from "../middlewares/authCompany.js";
+//import upload from "../middleware/multer.js"; // For profile image (if needed)
+import authCompany from "../middlewares/authCompany.js";
 
-dotenv.config();
+import {
+  registerCompany,
+  loginCompany,
+  postInternship,
+  getCompanyInternships
+} from "../controller/CompanyController.js";
 
-const router = express.Router();
+const companyRoute = express.Router();
 
 // =====================
-// Signup
+// Company Auth
 // =====================
-router.post("/signup", async (req, res) => {
-  const { name, email, password, companyName } = req.body;
-  try {
-    const exist = await Company.findOne({ email });
-    if (exist) return res.status(400).json({ message: "User already exists" });
+companyRoute.post("/register", registerCompany);
+companyRoute.post("/login", loginCompany);
 
-    const company = await Company.create({ name, email, password, companyName });
-
-    const token = jwt.sign(
-      { id: company._id, role: "company" },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.status(201).json({ token, company });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+// =====================
+// Protected routes (JWT + Role) 
+// =====================
+companyRoute.get("/profile", authCompany, (req, res) => {
+  res.status(200).json({ success: true, company: req.user });
 });
 
 // =====================
-// Login
+// Internship / Job Routes
 // =====================
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const company = await Company.findOne({ email });
-    if (!company) return res.status(400).json({ message: "User not found" });
+companyRoute.post("/post-internship", authCompany, postInternship);
+companyRoute.get("/my-internships", authCompany, getCompanyInternships);
+//companyRoute.post("/change-visibility", authCompany, changeInternshipVisibility);
 
-    const isMatch = await company.matchPassword(password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
-    const token = jwt.sign(
-      { id: company._id, role: "company" },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.status(200).json({ token, company });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// =====================
-// Protected profile route
-// =====================
-router.get("/profile", authCompany, async (req, res) => {
-  try {
-    res.json(req.user);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-export default router;
+export default companyRoute;

@@ -1,5 +1,5 @@
 import express from "express";
-//import mongoose from "mongoose";
+import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import studentRoutes from "./routes/student.js";
@@ -13,12 +13,14 @@ import connectDB from "./config/mongodb.js";
 dotenv.config();
 
 const app = express();
+console.log("SERVER.JS: Active and Modified by Agent (Step 312)");
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
+console.log("Mounting student routes...");
 app.use("/api/student", studentRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/campus", campusRoutes);
