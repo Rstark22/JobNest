@@ -6,7 +6,12 @@ const internshipSchema = new mongoose.Schema(
     description: { type: String, required: true },
     stipend: String,
     duration: String,
+    duration: String,
     location: String,
+    requiredSkills: {
+      type: [String],
+      default: [],
+    },
 
     company: {
       type: mongoose.Schema.Types.ObjectId,

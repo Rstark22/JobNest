@@ -7,6 +7,9 @@ import {
   getPendingInternships,
   verifyInternship,
   rejectInternship,
+  getPendingApplications,
+  approveApplication,
+  rejectApplication,
 } from "../controller/CampusController.js";
 
 dotenv.config();
@@ -76,6 +79,12 @@ CampusRouter.get("/profile", authCampus, async (req, res) => {
 // =====================
 CampusRouter.get("/pending", authCampus, getPendingInternships); // view pending internships
 CampusRouter.put("/internship/:id/verify", authCampus, verifyInternship); // verify internship
+CampusRouter.put("/internship/:id/verify", authCampus, verifyInternship); // verify internship
 CampusRouter.put("/internship/:id/reject", authCampus, rejectInternship); // reject internship
+
+// Student Applications
+CampusRouter.get("/applications/pending", authCampus, getPendingApplications);
+CampusRouter.put("/application/:id/approve", authCampus, approveApplication);
+CampusRouter.put("/application/:id/reject", authCampus, rejectApplication);
 
 export default CampusRouter;

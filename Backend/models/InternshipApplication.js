@@ -20,7 +20,12 @@ const internshipApplicationSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: ["pending", "accepted", "rejected"],
-            default: "pending",
+            default: "pending", // Company's decision
+        },
+        campusApproval: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending", // Campus's decision
         },
         appliedAt: {
             type: Date,

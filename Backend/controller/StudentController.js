@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 // import { v2 as cloudinary } from "cloudinary"; // TODO: Install and configure cloudinary
 import Student from "../models/Student.js";
-import Internship from "../models/Internship.js"
 import InternshipApplication from "../models/InternshipApplication.js";
 
 /* =====================================================
@@ -113,6 +112,45 @@ export const updateStudentResume = async (req, res) => {
         await student.save();
 
         res.json({ success: true, message: "Resume updated successfully" });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+/* =====================================================
+   🤖 GET RECOMMENDED INTERNSHIPS (AI MATCHING)
+===================================================== */
+export const getRecommendedInternships = async (req, res) => {
+    try {
+        const student = await Student.findById(req.user._id);
+        const studentSkills = student.skills || []; // e.g. ["React", "Node", "Python"]
+
+        // 1. Get all VERIFIED internships
+        const internships = await Internship.find({ status: "verified" })
+            .populate("company", "name email companyName");
+
+        // 2. Calculate Match Score
+        const recommended = internships.map((internship) => {
+            const required = internship.requiredSkills || [];
+
+            // Intersection
+            const matchCount = required.filter(skill =>
+                studentSkills.some(s => s.toLowerCase() === skill.toLowerCase())
+            ).length;
+
+            return {
+                ...internship.toObject(),
+                matchScore: matchCount, // Simple score: number of matching skills
+                missingSkills: required.filter(skill =>
+                    !studentSkills.some(s => s.toLowerCase() === skill.toLowerCase())
+                )
+            };
+        });
+
+        // 3. Sort by Score (High to Low)
+        recommended.sort((a, b) => b.matchScore - a.matchScore);
+
+        res.json({ success: true, recommended });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

@@ -60,4 +60,10 @@ router.put("/profile", authStudent, async (req, res) => {
   }
 });
 
+// Applications
+import { applyForInternship, getAppliedInternships, getRecommendedInternships } from "../controller/StudentController.js";
+router.post("/apply", authStudent, applyForInternship);
+router.get("/my-applications", authStudent, getAppliedInternships);
+router.get("/recommendations", authStudent, getRecommendedInternships); // New Route
+
 export default router;

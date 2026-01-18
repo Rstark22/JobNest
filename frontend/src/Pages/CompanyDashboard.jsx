@@ -9,6 +9,7 @@ export default function CompanyDashboard() {
     stipend: "",
     duration: "",
     location: "",
+    requiredSkills: "", // New field
   });
   const [myInternships, setMyInternships] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,15 +45,16 @@ export default function CompanyDashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      // Fetch company profile to get the company name (or rely on backend to pull it from token if updated)
-      // Note: We updated backend to pull companyName from req.user, but let's send it just in case or rely on backend.
-      // Actually backend route now sets companyName from req.user (Step 338+).
+      // Convert comma string to array
+      const skillsArray = form.requiredSkills
+        ? form.requiredSkills.split(",").map(s => s.trim()).filter(Boolean)
+        : [];
 
       await axios.post(
         `${API_BASE}/api/internships`,
         {
           ...form,
-          // companyName is handled by backend now
+          requiredSkills: skillsArray,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -66,6 +68,7 @@ export default function CompanyDashboard() {
         stipend: "",
         duration: "",
         location: "",
+        requiredSkills: "",
       });
       fetchMyInternships(); // Refresh list
     } catch (err) {
@@ -96,6 +99,15 @@ export default function CompanyDashboard() {
             className="w-full border p-3 rounded focus:outline-blue-500 min-h-[100px]"
             required
           />
+
+          <input
+            name="requiredSkills"
+            value={form.requiredSkills}
+            onChange={handleChange}
+            placeholder="Required Skills (e.g. React, Node.js)"
+            className="w-full border p-3 rounded focus:outline-blue-500 bg-gray-50"
+          />
+
           <div className="grid grid-cols-2 gap-4">
             <input
               name="stipend"
@@ -150,15 +162,20 @@ export default function CompanyDashboard() {
                     {new Date(internship.createdAt).toLocaleDateString()}
                   </p>
                   <p className="text-gray-700">{internship.description}</p>
+                  {internship.requiredSkills?.length > 0 && (
+                    <div className="mt-2 text-sm text-blue-600">
+                      Skills: {internship.requiredSkills.join(", ")}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col items-end">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${internship.status === "verified"
-                        ? "bg-green-100 text-green-700"
-                        : internship.status === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-800"
+                      ? "bg-green-100 text-green-700"
+                      : internship.status === "rejected"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-800"
                       }`}
                   >
                     {internship.status || "Pending"}
