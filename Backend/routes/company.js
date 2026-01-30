@@ -6,7 +6,9 @@ import {
   registerCompany,
   loginCompany,
   postInternship,
-  getCompanyInternships
+  getCompanyInternships,
+  getInternshipApplicants,
+  updateApplicationStatus
 } from "../controller/CompanyController.js";
 
 const companyRoute = express.Router();
@@ -30,5 +32,9 @@ companyRoute.get("/profile", authCompany, (req, res) => {
 companyRoute.post("/post-internship", authCompany, postInternship);
 companyRoute.get("/my-internships", authCompany, getCompanyInternships);
 //companyRoute.post("/change-visibility", authCompany, changeInternshipVisibility);
+
+// Applicants & update status
+companyRoute.get("/internship/:internshipId/applicants", authCompany, getInternshipApplicants);
+companyRoute.put("/application/status", authCompany, updateApplicationStatus);
 
 export default companyRoute;

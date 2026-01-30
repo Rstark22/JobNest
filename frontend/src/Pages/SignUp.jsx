@@ -87,7 +87,7 @@ const SignUpFixed = () => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 px-4">
             <div className="bg-white shadow-xl rounded-3xl p-8 w-full max-w-md">
                 <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">
-                    Create Your Account (Fixed)
+                    Create Your Account
                 </h2>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">

@@ -43,7 +43,7 @@ const StudentDashboard = () => {
           {[
             { name: "Home", key: "home" },
             { name: "Profile", key: "profile" },
-            { name: "Recommended Jobs ✨", key: "recommended" }, // New
+            { name: "Recommended Jobs", key: "recommended" }, // New
             { name: "Academics", key: "academics" },
             { name: "Skills", key: "skills" },
             { name: "Projects", key: "projects" },
@@ -159,6 +159,276 @@ const ProfileTab = () => {
   );
 };
 
+//skillsTab.jsx
+const SkillsTab = () => {
+  const { profile, setProfile } = useContext(AuthContext);
+  const [skill, setSkill] = useState("");
+
+  const addSkill = async () => {
+    if (!skill) return;
+
+    const updatedSkills = [...(profile.skills || []), skill];
+
+    try {
+      const token = localStorage.getItem("studentToken");
+      await axios.put(
+        "http://localhost:5000/api/student/profile",
+        { skills: updatedSkills },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setProfile({ ...profile, skills: updatedSkills });
+      setSkill("");
+      toast.success("Skill added successfully");
+    } catch (err) {
+      toast.error("Failed to add skill");
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Skills</h2>
+
+      <div className="flex gap-2 mb-4">
+        <input
+          value={skill}
+          onChange={(e) => setSkill(e.target.value)}
+          placeholder="Enter skill"
+          className="border p-2 rounded"
+        />
+        <button
+          onClick={addSkill}
+          className="bg-blue-600 text-white px-4 rounded"
+        >
+          Add
+        </button>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {profile?.skills?.map((s, i) => (
+          <span key={i} className="bg-gray-200 px-3 py-1 rounded-full text-sm">
+            {s}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+//AcademicsTab.jsx
+const AcademicsTab = () => {
+  const { profile, setProfile } = useContext(AuthContext);
+
+  const [formData, setFormData] = useState({
+    department: "",
+    university: "",
+    cgpa: "",
+    graduationYear: "",
+  });
+
+  const [editing, setEditing] = useState(false);
+
+  // 🔹 Pre-fill academic data
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        department: profile.department || "",
+        university: profile.university || "",
+        cgpa: profile.cgpa || "",
+        graduationYear: profile.graduationYear || "",
+      });
+    }
+  }, [profile]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("studentToken");
+
+      await axios.put(
+        "http://localhost:5000/api/student/profile",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // 🔹 Update context instantly
+      setProfile({ ...profile, ...formData });
+
+      toast.success("Academic details updated successfully 🎓");
+      setEditing(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update academic details");
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Academic Details</h2>
+
+      {!editing ? (
+        <>
+          <div className="space-y-2 text-lg">
+            <p><b>Department:</b> {profile?.department || "N/A"}</p>
+            <p><b>University:</b> {profile?.university || "N/A"}</p>
+            <p><b>CGPA:</b> {profile?.cgpa || "N/A"}</p>
+            <p><b>Graduation Year:</b> {profile?.graduationYear || "N/A"}</p>
+          </div>
+
+          <button
+            onClick={() => setEditing(true)}
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Edit Academics
+          </button>
+        </>
+      ) : (
+        <form onSubmit={handleUpdate} className="space-y-3 max-w-md">
+          <input
+            type="text"
+            name="department"
+            value={formData.department}
+            onChange={handleChange}
+            placeholder="Department"
+            className="border p-2 rounded w-full"
+          />
+
+          <input
+            type="text"
+            name="university"
+            value={formData.university}
+            onChange={handleChange}
+            placeholder="University"
+            className="border p-2 rounded w-full"
+          />
+
+          <input
+            type="text"
+            name="cgpa"
+            value={formData.cgpa}
+            onChange={handleChange}
+            placeholder="CGPA"
+            className="border p-2 rounded w-full"
+          />
+
+          <input
+            type="text"
+            name="graduationYear"
+            value={formData.graduationYear}
+            onChange={handleChange}
+            placeholder="Graduation Year"
+            className="border p-2 rounded w-full"
+          />
+
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              Save
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
+
+// ------------------- Projects Tab -------------------
+const ProjectsTab = () => {
+  const { profile } = useContext(AuthContext);
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Projects</h2>
+
+      {profile?.projects?.length ? (
+        <div className="grid md:grid-cols-2 gap-4">
+          {profile.projects.map((p, i) => (
+            <div key={i} className="border p-4 rounded shadow">
+              <h3 className="text-xl font-semibold">{p.title}</h3>
+              <p className="text-gray-600">{p.description}</p>
+              <a
+                href={p.link}
+                target="_blank"
+                className="text-blue-600 underline"
+              >
+                View Project
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p>No projects added</p>
+      )}
+    </div>
+  );
+};
+
+// ------------------- Certifications Tab -------------------
+const CertificationsTab = () => {
+  const { profile } = useContext(AuthContext);
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Certifications</h2>
+
+      {profile?.certifications?.length ? (
+        <ul className="list-disc pl-6 space-y-2">
+          {profile.certifications.map((c, i) => (
+            <li key={i}>
+              <b>{c.name}</b> – {c.platform}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No certifications added</p>
+      )}
+    </div>
+  );
+};
+
+// ------------------- Resume Tab -------------------
+const ResumeTab = () => {
+  const { profile } = useContext(AuthContext);
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Resume</h2>
+
+      {profile?.resumeLink ? (
+        <a
+          href={profile.resumeLink}
+          target="_blank"
+          className="bg-green-600 text-white px-5 py-2 rounded"
+        >
+          View Resume
+        </a>
+      ) : (
+        <p>No resume uploaded</p>
+      )}
+    </div>
+  );
+};
+
 // ------------------- Recommended Tab -------------------
 const RecommendedTab = () => {
   const [internships, setInternships] = useState([]);
@@ -185,7 +455,7 @@ const RecommendedTab = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Recommended for You 🤖</h2>
+      <h2 className="text-2xl font-bold mb-4">Recommended for You</h2>
       {internships.length === 0 ? <p>No recommendations yet. Add some skills!</p> : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {internships.map(i => (

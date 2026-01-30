@@ -7,11 +7,14 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+
+  const token = localStorage.getItem("studentToken");
   const API_BASE = "http://localhost:5000";
 
   useEffect(() => {
+    //No student logged in
     if (!token) {
+      setProfile(null);
       setLoading(false);
       return;
     }
@@ -19,12 +22,15 @@ export const AuthProvider = ({ children }) => {
     const fetchProfile = async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/student/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
         setProfile(res.data);
       } catch (error) {
         console.error("Fetch profile error:", error.response?.data || error);
-        toast.error("Failed to load profile");
+        toast.error("Failed to load student profile");
+        setProfile(null);
       } finally {
         setLoading(false);
       }
@@ -39,7 +45,9 @@ export const AuthProvider = ({ children }) => {
         `${API_BASE}/api/student/profile`,
         updatedProfile,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       setProfile(res.data);
@@ -51,7 +59,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ profile, setProfile, updateProfile, loading }}>
+    <AuthContext.Provider
+      value={{
+        profile,
+        setProfile,
+        updateProfile,
+        loading,
+        isAuthenticated: !!profile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
